@@ -1,7 +1,11 @@
 import axios from "axios";
 
 export class Service {
-  static async get(url: string, params = {}, additionalHeader = {}) {
+  static async get(
+    url: string,
+    params: Record<string, any> = {},
+    additionalHeader = {}
+  ) {
     try {
       const res = await axios.get(url, {
         params,

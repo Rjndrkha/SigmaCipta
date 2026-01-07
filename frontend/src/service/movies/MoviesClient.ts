@@ -69,4 +69,14 @@ export default class MoviesClient {
 
     return { response, error, errorMessage };
   }
+
+  static async GetMoviesDataDashboard(params: Record<string, any>, token: {}) {
+    const { response, error, errorMessage } = await Service.get(
+      `${process.env.REACT_APP_BACKEND_URL}${process.env.REACT_APP_BASE_GET_DASHBOARD_MOVIES_URL}`,
+      params,
+      token
+    );
+
+    return { response, error, errorMessage };
+  }
 }

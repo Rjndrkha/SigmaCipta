@@ -10,6 +10,9 @@ const {
   CreateMovieController,
   GetMovieByIdController,
 } = require("../controllers/SyncDataMovieController");
+const {
+  GetMoviesDashboardController,
+} = require("../controllers/dashboardController");
 
 router.get(
   "/sync-data",
@@ -28,6 +31,12 @@ router.delete(
   "/delete/:id",
   authenticateToken,
   asyncHandler(DeleteMovieController)
+);
+
+router.get(
+  "/data-dashboard",
+  authenticateToken,
+  asyncHandler(GetMoviesDashboardController)
 );
 
 module.exports = router;
