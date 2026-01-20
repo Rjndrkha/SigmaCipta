@@ -6,10 +6,10 @@ import type { FilterDropdownProps } from "antd/es/table/interface";
 import { Spin, Descriptions } from "antd";
 import Highlighter from "react-highlight-words";
 import Cookies from "js-cookie";
-import { IMovies } from "../../interface/IMovies";
-import MoviesClient from "../../service/movies/MoviesClient";
-import ButtonDefault from "../../component/button/button";
-import { DateFormatter } from "../../utils/dateConverter";
+import { IMovies } from "../../../interface/IMovies";
+import MoviesClient from "../../../service/movies/MoviesClient";
+import ButtonDefault from "../../../component/button/button";
+import { DateFormatter } from "../../../utils/dateConverter";
 import { Form, Select, DatePicker, InputNumber } from "antd";
 import dayjs from "dayjs";
 import { url } from "inspector";
@@ -29,22 +29,24 @@ const TableMovies: React.FC<{
   const [movieDetail, setMovieDetail] = useState<IMovies | null>(null);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [loadingUpdate, setLoadingUpdate] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState<IMovies | null>(null);
+
+  const [sortField, setSortField] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<string | undefined>(undefined);
+
   const [form] = Form.useForm();
   const token = Cookies.get("token") || "";
 
   useEffect(() => {
     getListMovies();
-  }, [page, limit]);
+  }, [page, limit, sortField, sortOrder]);
 
   const getListMovies = async () => {
     setLoading(true);
     const token = Cookies.get("token") || "";
 
     const { error, errorMessage, response } = await MoviesClient.GetMoviesData(
-      { page, limit },
-      token
+      { page, limit, sortField, sortOrder },
+      token,
     );
 
     if (error) {
@@ -144,9 +146,12 @@ const TableMovies: React.FC<{
     message.info("Berhasil Update");
   };
 
-  const handleTableChange = (pagination: any) => {
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
     if (pagination.current !== page) setPage(pagination.current);
     if (pagination.pageSize !== limit) setLimit(pagination.pageSize);
+
+    setSortField(sorter.field);
+    setSortOrder(sorter.order);
   };
 
   const loadData = (data: IMovies[]) => {
@@ -184,7 +189,7 @@ const TableMovies: React.FC<{
   const handleSearch = (
     selectedKeys: string[],
     confirm: FilterDropdownProps["confirm"],
-    dataIndex: DataIndex
+    dataIndex: DataIndex,
   ) => {
     confirm();
     setSearchText(selectedKeys[0]);
@@ -193,7 +198,7 @@ const TableMovies: React.FC<{
 
   const handleReset = (
     clearFilters: () => void,
-    confirm: FilterDropdownProps["confirm"]
+    confirm: FilterDropdownProps["confirm"],
   ) => {
     clearFilters();
     setSearchText("");
@@ -202,7 +207,7 @@ const TableMovies: React.FC<{
   };
 
   const getColumnSearchProps = (
-    dataIndex: DataIndex
+    dataIndex: DataIndex,
   ): TableColumnType<IMovies> => ({
     filterDropdown: ({
       setSelectedKeys,
@@ -299,6 +304,8 @@ const TableMovies: React.FC<{
       key: "name",
       ...getColumnSearchProps("name"),
       align: "center",
+      sorter: true,
+      sortOrder: sortField === "name" ? (sortOrder as any) : null,
     },
 
     {
@@ -307,6 +314,8 @@ const TableMovies: React.FC<{
       key: "genres",
       ...getColumnSearchProps("genres"),
       align: "center",
+      sorter: true,
+      sortOrder: sortField === "genres" ? (sortOrder as any) : null,
     },
     {
       title: "Runtime",
@@ -314,6 +323,8 @@ const TableMovies: React.FC<{
       key: "average_runtime",
       ...getColumnSearchProps("average_runtime"),
       align: "center",
+      sorter: true,
+      sortOrder: sortField === "average_runtime" ? (sortOrder as any) : null,
     },
     {
       title: "Schedule",
@@ -321,6 +332,8 @@ const TableMovies: React.FC<{
       key: "schedule_days",
       ...getColumnSearchProps("schedule_days"),
       align: "center",
+      sorter: true,
+      sortOrder: sortField === "schedule_days" ? (sortOrder as any) : null,
     },
     {
       title: "Last Sync Time",
@@ -329,6 +342,8 @@ const TableMovies: React.FC<{
       ...getColumnSearchProps("created_at"),
       align: "center",
       render: (date: any) => DateFormatter(date),
+      sorter: true,
+      sortOrder: sortField === "created_at" ? (sortOrder as any) : null,
     },
     {
       title: "Action",
@@ -400,7 +415,7 @@ const TableMovies: React.FC<{
             </Descriptions.Item>
 
             <Descriptions.Item label="Premiered">
-              {movieDetail.premiered}
+              {dayjs(movieDetail.premiered).format("DD-MM-YYYY")}
             </Descriptions.Item>
 
             <Descriptions.Item label="Genre">
@@ -564,7 +579,7 @@ const TableMovies: React.FC<{
 
             <div className="flex justify-end gap-3">
               <Button onClick={() => setOpenUpdate(false)}>Cancel</Button>
-              <Button type="primary" htmlType="submit" loading={loadingUpdate}>
+              <Button type="primary" htmlType="submit" loading={loadingDetail}>
                 Update
               </Button>
             </div>

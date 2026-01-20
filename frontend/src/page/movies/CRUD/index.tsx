@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import ButtonDefault from "../../../component/button/button";
 import MoviesClient from "../../../service/movies/MoviesClient";
 import Cookies from "js-cookie";
-import TableMovies from "../table";
+import TableMovies from "./table";
 import {
   Modal,
   Form,
@@ -15,9 +15,6 @@ import {
 
 function IndexCRUDMovies() {
   const [loading, setLoading] = useState<boolean>(false);
-  const [date, setDate] = useState<any>({
-    date: [],
-  });
   const [openAdd, setOpenAdd] = useState(false);
   const [form] = Form.useForm();
 
@@ -25,10 +22,11 @@ function IndexCRUDMovies() {
   const SyncData = async () => {
     setLoading(true);
 
-    const { response, error } = await MoviesClient.SyncMoviesData({}, token);
+    const { response } = await MoviesClient.SyncMoviesData({}, token);
 
     if (response) {
       message.info("Fetch Data Successfuly");
+      window.location.reload();
     }
     setLoading(false);
   };
@@ -44,10 +42,7 @@ function IndexCRUDMovies() {
       ended: values.ended?.format("YYYY-MM-DD"),
     };
 
-    const { response, error } = await MoviesClient.CreateMoviesData(
-      payload,
-      token
-    );
+    const { error } = await MoviesClient.CreateMoviesData(payload, token);
 
     if (error) {
       message.error(error);

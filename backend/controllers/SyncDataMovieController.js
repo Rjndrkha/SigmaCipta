@@ -42,7 +42,7 @@ const SyncDataMovieController = async (req, res) => {
 
       const resultInsertSyncMovie = await executePostgreQuery(
         queryInsertSyncMovie,
-        paramsInsertSyncMovie
+        paramsInsertSyncMovie,
       );
     }
 
@@ -53,9 +53,23 @@ const SyncDataMovieController = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 const GetMoviesController = async (req, res) => {
   try {
     await initializePostgreConnection();
+
+    const sortField = req.query.sortField || "created_at";
+    const sortOrder = req.query.sortOrder === "ascend" ? "ASC" : "DESC";
+    const allowedColumns = [
+      "name",
+      "genres",
+      "average_runtime",
+      "premiered",
+      "created_at",
+    ];
+    const finalSortField = allowedColumns.includes(sortField)
+      ? sortField
+      : "created_at";
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -63,7 +77,7 @@ const GetMoviesController = async (req, res) => {
 
     const dataQuery = `
       SELECT * FROM movies
-      ORDER BY premiered DESC
+      ORDER BY ${finalSortField} ${sortOrder}
       LIMIT $1 OFFSET $2
     `;
     const dataResult = await executePostgreQuery(dataQuery, [limit, offset]);

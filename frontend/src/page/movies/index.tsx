@@ -74,8 +74,16 @@ function IndexMovies() {
     },
   };
 
+  const columnData =
+    (dashboard?.columnChart ?? []).map((item: any) => ({
+      ...item,
+      date: item.date
+        ? new Date(item.date).toLocaleDateString("en-GB")
+        : item.date,
+    })) || [];
+
   const columnConfig = {
-    data: dashboard?.columnChart ?? [],
+    data: columnData,
     xField: "date",
     yField: "total",
     xAxis: {
